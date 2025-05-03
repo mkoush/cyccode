@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PromiseWatch | Tracking Political Accountability</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1a2a3a;
+      --secondary: #3498db;
+      --tertiary: #2980b9;
+      --kept: #27ae60;
+      --broken: #e74c3c;
+      --stalled: #f39c12;
+      --inprogress: #3498db;
+      --light: #ecf0f1;
+      --dark: #2c3e50;
+      --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+      --gradient-bg: linear-gradient(135deg, #1a2a3a 0%, #34495e 100%);
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f8f9fa;
+      color: #333;
+      line-height: 1.6;
+    }
+    
+    header {
+      background: var(--gradient-bg);
+      color: white;
+      padding: 1rem 0;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .container {
+      width: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+    
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .logo {
+      font-size: 1.8rem;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+    }
+    
+    .logo-icon {
+      margin-right: 10px;
+      color: var(--secondary);
+    }
+    
+    .logo span {
+      color: var(--secondary);
+    }
+    
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+    }
+    
+    .nav-links a {
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      transition: all 0.3s ease;
+    }
+    
+    .nav-links a:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .nav-links a.active {
+      background-color: var(--secondary);
+    }
+    
+    .hero {
+      background: url('/api/placeholder/1400/500') center/cover no-repeat;
+      height: 400px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      text-align: center;
+    }
+    
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+    }
+    
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 800px;
+      padding: 2rem;
+    }
+    
+    .hero h1 {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    }
+    
+    .hero p {
+      font-size: 1.2rem;
+      margin-bottom: 2rem;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    }
+    
+    .search-container {
+      background-color: white;
+      padding: 1.5rem;
+      border-radius: 10px;
+      box-shadow: var(--card-shadow);
+      margin-top: -50px;
+      position: relative;
+      z-index: 10;
+    }
+    
+    .search-form {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .search-bar {
+      flex: 1;
+      padding: 1rem 1.5rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 50px;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+    
+    .search-bar:focus {
+      outline: none;
+      border-color: var(--secondary);
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+    }
+    
+    .search-btn {
+      background-color: var(--secondary);
+      color: white;
+      border: none;
+      padding: 0 2rem;
+      border-radius: 50px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s ease;
+    }
+    
+    .search-btn:hover {
+      background-color: var(--tertiary);
+    }
+    
+    main {
+      padding: 3rem 0;
+    }
+    
+    .tabs-container {
+      margin-bottom: 2rem;
+    }
+    
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid #ddd;
+      margin-bottom: 2rem;
+    }
+    
+    .tab-btn {
+      padding: 1rem 2rem;
+      font-size: 1rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      color: #666;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+    
+    .tab-btn:hover {
+      color: var(--secondary);
+    }
+    
+    .tab-btn.active {
+      color: var(--secondary);
+    }
+    
+    .tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background-color: var(--secondary);
+    }
+    
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.5s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    .stats-overview {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 3rem;
+    }
+    
+    .stat-card {
+      background-color: white;
+      padding: 1.5rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      text-align: center;
+      transition: transform 0.3s ease;
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+    }
+    
+    .stat-number {
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: var(--secondary);
+      margin: 0.5rem 0;
+    }
+    
+    .stat-label {
+      color: #666;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .politician-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 2rem;
+      margin-bottom: 3rem;
+    }
+    
+    .politician-card {
+      background-color: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: var(--card-shadow);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .politician-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+    }
+    
+    .politician-header {
+      display: flex;
+      padding: 1.5rem;
+      align-items: center;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .politician-photo {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 1.5rem;
+      background-color: #f0f0f0;
+    }
+    
+    .politician-info {
+      flex: 1;
+    }
+    
+    .politician-name {
+      margin: 0 0 0.3rem;
+      font-size: 1.3rem;
+      color: var(--dark);
+    }
+    
+    .politician-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 0.5rem;
+    }
+    
+    .politician-position {
+      font-size: 0.95rem;
+      color: #666;
+    }
+    
+    .politician-party {
+      display: inline-block;
+      padding: 0.2rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+    
+    .party-democrat {
+      background-color: #D9EDF7;
+      color: #31708F;
+    }
+    
+    .party-republican {
+      background-color: #F2DEDE;
+      color: #A94442;
+    }
+    
+    .party-independent {
+      background-color: #DFF0D8;
+      color: #3C763D;
+    }
+    
+    .promise-stats {
+      padding: 1.5rem;
+    }
+    
+    .promise-count {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      font-size: 0.95rem;
+    }
+    
+    .promise-count-number {
+      font-weight: bold;
+      color: var(--dark);
+    }
+    
+    .promise-count-percent {
+      font-weight: bold;
+    }
+    
+    .high-fulfillment {
+      color: var(--kept);
+    }
+    
+    .medium-fulfillment {
+      color: var(--stalled);
+    }
+    
+    .low-fulfillment {
+      color: var(--broken);
+    }
+    
+    .promise-bar {
+      height: 10px;
+      background-color: #f0f0f0;
+      border-radius: 5px;
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+    
+    .promise-progress {
+      display: flex;
+      height: 100%;
+      transition: width 1s ease-in-out;
+    }
+    
+    .progress-kept {
+      background-color: var(--kept);
+    }
+    
+    .progress-in-progress {
+      background-color: var(--inprogress);
+    }
+    
+    .progress-stalled {
+      background-color: var(--stalled);
+    }
+    
+    .progress-broken {
+      background-color: var(--broken);
+    }
+    
+    .promise-legend {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.8rem;
+      font-size: 0.85rem;
+      color: #666;
+    }
+    
+    .legend-item {
+      display: flex;
+      align-items: center;
+    }
+    
+    .legend-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    
+    .card-footer {
+      padding: 1rem 1.5rem;
+      background-color: #f9f9f9;
+      border-top: 1px solid #f0f0f0;
+    }
+    
+    .view-details {
+      display: block;
+      width: 100%;
+      padding: 0.8rem;
+      text-align: center;
+      background-color: var(--primary);
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+    }
+    
+    .view-details:hover {
+      background-color: var(--secondary);
+    }
+    
+    .section-heading {
+      font-size: 1.8rem;
+      margin-bottom: 1.5rem;
+      color: var(--dark);
+      position: relative;
+      padding-bottom: 0.8rem;
+    }
+    
+    .section-heading:after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 60px;
+      height: 3px;
+      background-color: var(--secondary);
+    }
+    
+    .bill-card {
+      background-color: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: var(--card-shadow);
+      margin-bottom: 1.5rem;
+      transition: transform 0.3s ease;
+    }
+    
+    .bill-card:hover {
+      transform: translateY(-5px);
+    }
+    
+    .bill-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .bill-meta {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+    
+    .bill-id {
+      font-size: 0.9rem;
+      color: #666;
+    }
+    
+    .bill-status {
+      display: inline-block;
+      padding: 0.2rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+    
+    .status-passed {
+      background-color: #DFF0D8;
+      color: #3C763D;
+    }
+    
+    .status-pending {
+      background-color: #FCF8E3;
+      color: #8A6D3B;
+    }
+    
+    .status-failed {
+      background-color: #F2DEDE;
+      color: #A94442;
+    }
+    
+    .bill-title {
+      font-size: 1.3rem;
+      margin: 0.5rem 0;
+      color: var(--dark);
+    }
+    
+    .bill-sponsors {
+      font-size: 0.9rem;
+      color: #666;
+    }
+    
+    .bill-content {
+      padding: 1.5rem;
+    }
+    
+    .bill-description {
+      margin-bottom: 1.5rem;
+      line-height: 1.7;
+    }
+    
+    .bill-stats {
+      display: flex;
+      justify-content: space-between;
+      padding: 1rem 1.5rem;
+      background-color: #f9f9f9;
+      border-top: 1px solid #f0f0f0;
+    }
+    
+    .bill-stat {
+      text-align: center;
+    }
+    
+    .bill-stat-number {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: var(--dark);
+    }
+    
+    .bill-stat-label {
+      font-size: 0.8rem;
+      color: #666;
+    }
+    
+    .pagination {
+      display: flex;
+      justify-content: center;
+      margin-top: 2rem;
+    }
+    
+    .pagination-btn {
+      margin: 0 0.3rem;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: white;
+      border: 1px solid #ddd;
+      color: #555;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .pagination-btn:hover {
+      background-color: #f5f5f5;
+    }
+    
+    .pagination-btn.active {
+      background-color: var(--secondary);
+      color: white;
+      border-color: var(--secondary);
+    }
+    
+    .pagination-btn.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      z-index: 1500;
+      overflow-y: auto;
+    }
+    
+    .modal-content {
+      background-color: white;
+      margin: 5% auto;
+      width: 90%;
+      max-width: 900px;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
+      animation: modalFadeIn 0.3s ease;
+    }
+    
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: translateY(-50px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .modal-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid #f0f0f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .modal-title {
+      font-size: 1.5rem;
+      color: var(--dark);
+      margin: 0;
+    }
+    
+    .close-modal {
+      font-size: 1.8rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #777;
+      transition: color 0.3s;
+    }
+    
+    .close-modal:hover {
+      color: var(--broken);
+    }
+    
+    .modal-body {
+      padding: 2rem;
+    }
+    
+    .promise-detail {
+      margin-bottom: 2rem;
+    }
+    
+    .promise-detail-title {
+      font-size: 1.3rem;
+      color: var(--dark);
+      margin-bottom: 1rem;
+    }
+    
+    .promise-quote {
+      background-color: #f9f9f9;
+      border-left: 4px solid var(--secondary);
+      padding: 1rem;
+      margin-bottom: 1rem;
+      font-style: italic;
+    }
+    
+    .promise-source {
+      font-size: 0.9rem;
+      color: #666;
+      display: flex;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+    
+    .promise-source i {
+      margin-right: 0.5rem;
+      color: var(--secondary);
+    }
+    
+    .timeline {
+      position: relative;
+      margin: 2rem 0;
+      padding-left: 2rem;
+    }
+    
+    .timeline:before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 2px;
+      background-color: #ddd;
+    }
+    
+    .timeline-item {
+      position: relative;
+      margin-bottom: 2rem;
+    }
+    
+    .timeline-item:last-child {
+      margin-bottom: 0;
+    }
+    
+    .timeline-dot {
+      position: absolute;
+      left: -2.5rem;
+      top: 0;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background-color: var(--secondary);
+      border: 3px solid white;
+    }
+    
+    .timeline-date {
+      font-size: 0.9rem;
+      color: #777;
+      margin-bottom: 0.5rem;
+    }
+    
+    .timeline-content {
+      background-color: white;
+      padding: 1rem;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    
+    .timeline-title {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--dark);
+    }
+    
+    .evidence-section {
+      margin-top: 2rem;
+    }
+    
+    .evidence-item {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      background-color: #f9f9f9;
+      border-radius: 5px;
+    }
+    
+    .evidence-icon {
+      color: var(--secondary);
+      margin-right: 1rem;
+      font-size: 1.2rem;
+    }
+    
+    .evidence-content {
+      flex: 1;
+    }
+    
+    .evidence-source {
+      font-size: 0.8rem;
+      color: #666;
+      margin-top: 0.5rem;
+    }
+    
+    .evidence-link {
+      color: var(--secondary);
+      text-decoration: none;
+    }
+    
+    .evidence-link:hover {
+      text-decoration: underline;
+    }
+    
+    footer {
+      background-color: var(--dark);
+      color: white;
+      padding: 3rem 0;
+      margin-top: 4rem;
+    }
+    
+    .footer-content {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+    }
+    
+    .footer-section h3 {
+      font-size: 1.2rem;
+      margin-bottom: 1.5rem;
+      position: relative;
+      padding-bottom: 0.5rem;
+    }
+    
+    .footer-section h3:after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 40px;
+      height: 2px;
+      background-color: var(--secondary);
+    }
+    
+    .footer-links {
+      list-style: none;
+    }
+    
+    .footer-links li {
+      margin-bottom: 0.8rem;
+    }
+    
+    .footer-links a {
+      color: #bbb;
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    
+    .footer-links a:hover {
+      color: var(--secondary);
+    }
+    
+    .social-links {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    
+    .social-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      background-color: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      color: white;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+    
+    .social-icon:hover {
+      background-color: var(--secondary);
+      transform: translateY(-3px);
+    }
+    
+    .copyright {
+      text-align: center;
+      padding-top: 2rem;
+      margin-top: 2rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      color: #999;
+      font-size: 0.9rem;
+    }
+    
+    @media (max-width: 768px) {
+      .header-content {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      
+      .nav-links {
+        gap: 1rem;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      
+      .tabs {
+        overflow-x: auto;
+        white-space: nowrap;
+        padding-bottom: 10px;
+      }
+      
+      .tab-btn {
+        padding: 0.8rem 1.2rem;
+      }
+      
+      .hero h1 {
+        font-size: 2rem;
+      }
+      
+      .search-form {
+        flex-direction: column;
+      }
+      
+      .search-btn {
+        width: 100%;
+        padding: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="header-content">
+        <div class="logo">
+          <i class="fas fa-balance-scale logo-icon"></i>
+          Promise<span>Watch</span>
+        </div>
+        <nav class="nav-links">
+          <a href="#" class="active">Home</a>
+          <a href="#">Politicians</a>
+          <a href="#">Bills</a>
+          <a href="#">Compare</a>
+          <a href="#">Methodology</a>
+          <a href="#">About</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+  
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Track Politicians' Promises</h1>
+      <p>Holding elected officials accountable through objective tracking and transparent analysis</p>
+    </div>
+  </section>
+  
+  <div class="container">
+    <div class="search-container">
+      <form class="search-form">
+        <input type="text" class="search-bar" placeholder="Search by politician name, state, position, or promise topic...">
+        <button type="submit" class="search-btn">Search</button>
+      </form>
+    </div>
+    
+    <main>
+      <div class="stats-overview">
+        <div class="stat-card">
+          <div class="stat-label">Politicians Tracked</div>
+          <div class="stat-number">536</div>
+          <div>From all branches of government</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Promises Tracked</div>
+          <div class="stat-number">6,238</div>
+          <div>From campaigns and official statements</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Average Fulfillment Rate</div>
+          <div class="stat-number">48%</div>
+          <div>Across all politicians and parties</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Bills Tracked</div>
+          <div class="stat-number">1,472</div>
+          <div>Related to campaign promises</div>
+        </div>
+      </div>
+      
+      <div class="tabs-container">
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="presidents">Presidents</button>
+          <button class="tab-btn" data-tab="senators">Senators</button>
+          <button class="tab-btn" data-tab="representatives">Representatives</button>
+          <button class="tab-btn" data-tab="bills">Bills</button>
+        </div>
+        
+        <!-- Presidents Tab -->
+        <div id="presidents" class="tab-content active">
+          <h2 class="section-heading">Presidential Promise Tracking</h2>
+          
+          <div class="politician-grid">
+            <!-- President Card 1 -->
+            <div class="politician-card">
+              <div class="politician-header">
+                <div class="politician-photo"></div>
+                <div class="politician-info">
+                  <h3 class="politician-name">Donald Trump</h3>
+                  <div class="politician-meta">
+                    <span class="politician-position">President (2017-2021, 2025-Present)</span>
+                    <span class="politician-party party-republican">R</span>
+                  </div>
+                </div>
+              </div>
+              <div class="promise-stats">
+                <div class="promise-count">
+                  <span>Total Promises: <span class="promise-count-number">58</span></span>
+                  <span>Fulfillment: <span class="promise-count-percent medium-fulfillment">43%</span></span>
+                </div>
+                <div class="promise-bar">
+                  <div class="promise-progress">
+                    <div class="progress-kept" style="width: 31%;"></div>
+                    <div class="progress-in-progress" style="width: 12%;"></div>
+                    <div class="progress-stalled" style="width: 19%;"></div>
+                    <div class="progress-broken" style="width: 38%;"></div>
+                  </div>
+                </div>
+                <div class="promise-legend">
+                  <div class="legend-item">
+                    <div class="legend-color" style="background-color: var(--kept);"></div>
+                    <span>Kept (18)</span>
+                  </div>
+                  <div class="legend-item">
+                    <div class="legend-color" style="background-color: var(--inprogress);"></div>
+                    <span>In Progress (7)</span>
+                  </div>
+                  <div class="legend-item">
+                    <div class="legend-color" style="background-color: var(--stalled);"></div>
+                    <span>Stalled (11)</span>
+                  </div>
+                  <div class="legend-item">
+                    <div class="legend-color" style="background-color: var(--broken);"></div>
+                    <span>Broken (22)</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card-footer">
+                <a href="#" class="view-details" onclick="openModal('trump-modal')">View Promise Details</a>
+              </div>
+            </div>
+            
+            <!-- President Card 2 -->
+            <div class="politician-card">
+              <div class="politician-header">
+                <div class="politician-photo"></div>
+                <div class="politician-info">
+                  <h3 class="politician-name">Joe Biden</h
