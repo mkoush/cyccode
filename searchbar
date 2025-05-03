@@ -1,0 +1,135 @@
+// HTML for the search bar
+<div class="search-container">
+  <form class="search-form" id="searchForm">
+    <input type="text" class="search-bar" id="searchInput" placeholder="Search for a promise or politician...">
+    <button class="search-btn" type="submit"><i class="fas fa-search"></i> Search</button>
+  </form>
+</div>
+
+// CSS for the search bar
+.search-container {
+  margin-bottom: 40px;
+}
+
+.search-form {
+  display: flex;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.search-bar {
+  flex: 1;
+  padding: 12px 16px;
+  font-size: 16px;
+  border: 2px solid var(--medium-gray);
+  border-radius: 4px 0 0 4px;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.search-bar:focus {
+  border-color: var(--primary-color);
+}
+
+.search-btn {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  font-size: 16px;
+  border-radius: 0 4px 4px 0;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.search-btn:hover {
+  background-color: var(--primary-dark);
+}
+
+// JavaScript for search functionality
+function setupSearch() {
+  const searchForm = document.getElementById('searchForm');
+  const searchInput = document.getElementById('searchInput');
+  
+  searchForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const searchTerm = searchInput.value.toLowerCase().trim();
+    
+    if (searchTerm === '') return;
+    
+    // Filter promises based on search term
+    const filteredPromises = promisesData.filter(promise => 
+      promise.title.toLowerCase().includes(searchTerm) || 
+      promise.description.toLowerCase().includes(searchTerm) || 
+      promise.politician.toLowerCase().includes(searchTerm)
+    );
+    
+    // Show promises tab
+    document.querySelector('.tab-btn[data-tab="promises"]').click();
+    
+    // Update promise list with filtered results
+    const promiseList = document.getElementById('promiseList');
+    
+    if (filteredPromises.length === 0) {
+      promiseList.innerHTML = `<p>No promises found matching "${searchInput.value}"</p>`;
+      return;
+    }
+    
+    renderFilteredPromises(filteredPromises);
+  });
+}
+
+// Function to render filtered promises
+function renderFilteredPromises(promises) {
+  const promiseList = document.getElementById('promiseList');
+  
+  promiseList.innerHTML = promises.map(promise => {
+    let statusClass = '';
+    let statusText = '';
+    
+    switch(promise.status) {
+      case 'kept':
+        statusClass = 'status-kept';
+        statusText = 'Kept';
+        break;
+      case 'broken':
+        statusClass = 'status-broken';
+        statusText = 'Broken';
+        break;
+      case 'in-progress':
+        statusClass = 'status-in-progress';
+        statusText = 'In Progress';
+        break;
+      case 'stalled':
+        statusClass = 'status-stalled';
+        statusText = 'Stalled';
+        break;
+    }
+    
+    return `
+      <li class="promise-item">
+        <div class="promise-header">
+          <h3 class="promise-title">${promise.title}</h3>
+          <span class="promise-status ${statusClass}">${statusText}</span>
+        </div>
+        <div class="promise-meta">
+          <span class="promise-politician"><i class="fas fa-user"></i> ${promise.politician}</span>
+          <span class="promise-date"><i class="far fa-calendar-alt"></i> ${promise.date}</span>
+        </div>
+        <p class="promise-description">${promise.description}</p>
+        <div class="promise-sources">
+          <span>Sources:</span>
+          ${promise.sources.map(source => `
+            <a href="${source.url}" class="promise-source-link" target="_blank">${source.name}</a>
+          `).join(', ')}
+        </div>
+      </li>
+    `;
+  }).join('');
+}
+
+// Initialize search in the main init function
+function init() {
+  // ... other initialization code
+  setupSearch();
+}
